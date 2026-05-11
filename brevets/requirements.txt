@@ -1,5 +1,5 @@
 arrow
 Flask
-nose
+pytest
 pep8
 autopep8
