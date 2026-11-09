@@ -15,7 +15,7 @@
    </script>
 
   <script 
-    src="{{ url_for('static', filename="js/moment.min.js") }}"></script>
+    src="{{ url_for('static', filename='js/moment.min.js') }}"></script>
 
 </head>
 
@@ -41,20 +41,23 @@
 <div class="row">
   <div class="col-md-4">
     <label>Distance</label>
-  <select name="distance" id="brevet_dist_km">
-    <option value="200">200km</option>
-    <option value="300">300km</option>
-    <option value="400">400km</option>
-    <option value="600">600km</option>
-    <option value="1000">1000km</option>
-  </select>
-  </div> <div class="col-md-6">
+    <select name="distance" id="brevet_dist_km">
+      <option value="200">200km</option>
+      <option value="300">300km</option>
+      <option value="400">400km</option>
+      <option value="600">600km</option>
+      <option value="1000">1000km</option>
+    </select>
+  </div>
+  <div class="col-md-6">
     <label>Begins at</label>
-    <input type=date name="begin_date" id="begin_date" value="2026-01-01" />
-    <input type=time name="begin_time" id="begin_time" value="00:00"    />
-  </div> </div> <br /> 
+    <input type="date" name="begin_date" id="begin_date" value="2026-01-01" />
+    <input type="time" name="begin_time" id="begin_time" value="00:00" />
+  </div>
+</div>
+<br />
 
-  <div class="row">
+<div class="row">
   <div class="col-md-12"> 
   <table class="control_time_table">
       <tr>
@@ -80,53 +83,83 @@
     </tr>
     {% endfor %}
   </table>
-  </div> </div> </form>
+  </div>
+</div>
+</form>
 
 <script type="text/javascript">
 
-  var SCRIPT_ROOT = {{ request.script_root|tojson|safe }} ;
-  var TIME_CALC_URL = SCRIPT_ROOT + "/_calc_times";
+  var TIME_CALC_URL = "/_calc_times";
 
   function calc_times(control) {
-    var km = control.find("input[name='km']").val();
-    var brevet_dist = $("#brevet_dist_km").val();
-    var start_time = $("#begin_date").val() + " " + $("#begin_time").val();
-    
+    var km_val = control.find("input[name='km']").val();
     var open_time_field = control.find("input[name='open']");
     var close_time_field = control.find("input[name='close']");
+
+    if (km_val === "" || isNaN(km_val)) {
+      open_time_field.val("");
+      close_time_field.val("");
+      return;
+    }
+
+    var km = parseFloat(km_val);
+    var brevet_dist = $("#brevet_dist_km").val();
+    var start_time = $("#begin_date").val() + " " + $("#begin_time").val();
     
     $.getJSON(TIME_CALC_URL, { km: km, brevet_dist: brevet_dist, start_time: start_time }, 
       function(data) {
          var times = data.result;
-         open_time_field.val( moment(times.open).format("ddd M/D H:mm"));
-         close_time_field.val( moment(times.close).format("ddd M/D H:mm"));
+         open_time_field.val(moment.utc(times.open).format("ddd M/D H:mm"));
+         close_time_field.val(moment.utc(times.close).format("ddd M/D H:mm"));
        }
      );
-    }
+  }
 
   $(document).ready(function(){
 
       $('input[name="miles"]').change(
          function() {
              var miles = parseFloat($(this).val());
-             var km = (1.609344 * miles).toFixed(1) ;
-             var control_entry = $(this).parents(".control")
+             var control_entry = $(this).parents(".control");
              var target = control_entry.find("input[name='km']");
-             target.val( km );
+
+             if (isNaN(miles)) {
+                 target.val("");
+                 calc_times(control_entry);
+                 return;
+             }
+
+             var km = (1.609344 * miles).toFixed(1);
+             target.val(km);
              calc_times(control_entry);
           });
 
       $('input[name="km"]').change(
          function() {
              var km = parseFloat($(this).val());
-             var miles = (0.621371 * km).toFixed(1) ;
-             var control_entry = $(this).parents(".control")
+             var control_entry = $(this).parents(".control");
              var target = control_entry.find("input[name='miles']");
-             target.val( miles );
+
+             if (isNaN(km)) {
+                 target.val("");
+                 calc_times(control_entry);
+                 return;
+             }
+
+             var miles = (0.621371 * km).toFixed(1);
+             target.val(miles);
              calc_times(control_entry);
           });
 
-     });
+      $('#brevet_dist_km, #begin_date, #begin_time').change(function() {
+          $('.control').each(function() {
+              if ($(this).find("input[name='km']").val() !== "") {
+                  calc_times($(this));
+              }
+          });
+      });
+
+  });
 
 </script>
 

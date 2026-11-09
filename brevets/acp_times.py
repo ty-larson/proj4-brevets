@@ -22,6 +22,7 @@ def open_time(control_dist_km, brevet_dist_km, brevet_start_time):
         
     return start_time.shift(minutes=round(hours * 60)).isoformat()
 
+
 def close_time(control_dist_km, brevet_dist_km, brevet_start_time):
     """
     Calculates the closing time for a control point.
@@ -33,7 +34,9 @@ def close_time(control_dist_km, brevet_dist_km, brevet_start_time):
         return start_time.shift(hours=1).isoformat()
         
     hours = 0
-    if calc_dist <= 600:
+    if calc_dist < 60:
+        hours = (calc_dist / 20) + 1
+    elif calc_dist <= 600:
         hours = calc_dist / 15
     else:
         hours = (600 / 15) + ((calc_dist - 600) / 11.428)

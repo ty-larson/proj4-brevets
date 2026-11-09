@@ -31,3 +31,8 @@ def test_control_exceeds_brevet():
     open_200 = acp_times.open_time(200, 200, START_TIME)
     open_205 = acp_times.open_time(205, 200, START_TIME)
     assert open_200 == open_205
+
+def test_short_control_under_60km():
+    # 20km control closing time: 20/20 + 1 hr = 2 hours
+    close_t = acp_times.close_time(20, 200, START_TIME)
+    assert close_t == arrow.get(START_TIME).shift(hours=2).isoformat()

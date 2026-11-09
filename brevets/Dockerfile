@@ -1,5 +1,5 @@
 FROM python:3
-LABEL maintainer="noemail@website.domain"
+LABEL maintainer="tyl@uoregon.edu"
 
 # Update and install only essential build tools
 RUN apt-get update -y && apt-get install -y build-essential
